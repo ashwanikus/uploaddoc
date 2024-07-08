@@ -25,16 +25,61 @@
         <!-- LOCAL INFORMATION -->
         <div class="col-sm-6">
             <div class="well">
-                <h3><span class="fa fa-user"></span> <%= message %></h3>                
-                    <p>
-                        <strong>id</strong>: <%= user.username %> <br>
-                        <strong>email</strong>: ashwani.bietjhs@gmail.com<br>
-                        <strong>password</strong>: qwerty
-                    </p>
+                <h3><span class="fa fa-user"></span> <%= message %></h3> 
+                <p>
+                    <strong>id</strong>: <%= user.username %> <br>
+                    <strong>email</strong>: ashwani.bietjhs@gmail.com<br>
+                    <strong>password</strong>: qwerty
+                </p>
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload image</label>
+                    <input class="form-control" type="file" id="formFile" accept="image/*">
+                    <button type="submit" id="uploadfile">Upload</button>
+                </div>
+                <hr>
+                <div>
+                    <table>
+                        <tr>
+                            <td>uploaded by</td>
+                            <td>path</td>
+                            <td>uploaded on</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(function() {
+        $("#uploadfile").on("click", function () {
+            var fileInput = $('#formFile')[0];
+            var file = fileInput.files[0];
+            console.log("file: ",file);
+
+            if (file) {
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log('File uploaded successfully', response);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log('File upload failed: ' + textStatus);
+                    }
+                });
+            } else {
+                console.log('Please select a file to upload');
+            }
+        })
+    });
+</script>
 </body>
 </html>

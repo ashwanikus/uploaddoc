@@ -1,7 +1,22 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
+var uploadedFiles = require('../models/Upload');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+
+// Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+      cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // Middleware to protect routes
 function authMiddleware(req, res, next) {
@@ -62,7 +77,6 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/dashboard', authMiddleware, async (req, res) => {
-  console.log("req.session.userId: ",req.session.userId);
   const user = await User.findOne({ _id: req.session.userId });
 
     if (user) {
@@ -71,6 +85,23 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     } else {
       next(createError(400));
     }
+});
+
+router.post('/upload', authMiddleware, upload.single('file') , async (req,res)=>{
+  const {originalname,mimetype, path, size, filename} = req.file;
+  const user = await User.findOne({ _id: req.session.userId });
+  const uploadedby = user.username;
+  const uploadedbyid = user._id;
+  const uploadedon = new Date();
+  
+  const newFileInfo = new uploadedFiles({ originalname,mimetype, filepath: path, size, filename, uploadedby, uploadedbyid, uploadedon});
+
+  try {
+    await newFileInfo.save();
+    res.send('File uploaded successfully.');
+  }catch(error){
+    return res.status(400).send('No file uploaded.');
+  }
   
 });
 
